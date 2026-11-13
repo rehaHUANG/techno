@@ -14,8 +14,15 @@
 </main><div class="toast" id="toast"></div>
 <script>
 const KEY='class-scoreboard-v1';
-const initial=()=>({teams:Array.from({length:6},(_,i)=>({name:`第 ${i+1} 組`,members:Array.from({length:5},(_,j)=>({name:`成員 ${j+1}`,score:0})),checks:[0,0,0,0,0,0]}))});
-let data;try{data=JSON.parse(localStorage.getItem(KEY))||initial();if(data.teams.length!==6||data.teams.some(t=>t.members.length!==5))data=initial()}catch{data=initial()}data.teams.forEach(t=>{t.checks=Array.from({length:6},(_,i)=>+t.checks?.[i]||0)});localStorage.setItem(KEY,JSON.stringify(data))
+const ROSTER=[
+['陳勇安','吳芝穎','郭姵萱','陳顗','謝辰薇'],
+['許恩碩','林妤臻','陳禹霏','陳威宇','董若芃'],
+['翁詠翔','郭郁蓁','陳薇竹','杜亮霆','鄭宇希'],
+['林秋睿','鄂歆悅','陳煒萱','李品鋕',''],
+['潘宥元','司徒辰寧','林亮妍','吳邦愷',''],
+['葉宥霖','姜郁祺','蘇令倢','黃品睿','']
+];const initial=()=>({teams:Array.from({length:6},(_,i)=>({name:`第 ${i+1} 組`,members:ROSTER[i].map(name=>({name,score:0})),checks:[0,0,0,0,0,0]}))});
+let data;try{data=JSON.parse(localStorage.getItem(KEY))||initial();if(data.teams.length!==6||data.teams.some((t,i)=>!Array.isArray(t.members)||t.members.length<ROSTER[i].length))data=initial()}catch{data=initial()}data.teams.forEach((t,ti)=>{t.checks=Array.from({length:6},(_,i)=>+t.checks?.[i]||0);if(data.rosterVersion!==1){t.members=t.members.slice(0,ROSTER[ti].length);t.members.forEach((m,mi)=>m.name=ROSTER[ti][mi])}});data.rosterVersion=1;localStorage.setItem(KEY,JSON.stringify(data))
 const $=s=>document.querySelector(s);const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
 const CHECKS=['worksheet','top','rear','front','vedio-chair','vedio-3view'];
@@ -26,6 +33,10 @@ $('#resetBtn').addEventListener('click',()=>{if(confirm('確定重設所有小�
 $('#exportBtn').addEventListener('click',()=>{const rows=[['小組','成員','個人分數',...CHECKS.map((n,i)=>`檢核點${i+1}:${n}`),'小組總分']];data.teams.forEach(t=>t.members.forEach((m,i)=>rows.push([t.name,m.name,m.score,...(i===0?t.checks:['','','','','','']),i===0?t.members.reduce((a,x)=>a+(+x.score||0),0)+t.checks.reduce((a,x)=>a+(+x||0),''): ''])));const csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='小組成績.csv';a.click();URL.revokeObjectURL(a.href);notify('成績已匯出')});
 let toastTimer;function notify(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),1800)}render();
 </script></body></html>
+
+
+
+
 
 
 
